@@ -1,37 +1,35 @@
-name: GitHub App CI
+name: Run GitHub App Manually
 
 on:
   workflow_dispatch:
+    
 
 jobs:
   run-app:
     runs-on: ubuntu-latest
 
-    # env:
-    #   APP_ID: ${{ secrets.APP_ID }}
-    #   PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-    #   WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
-    #   CLIENT_ID: ${{ secrets.CLIENT_ID }}
-    #   CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: 18
+          python-version: '3.11'
+
+      - name: Install pipenv
+        run: pip install pipenv
 
       - name: Install dependencies
-        run: npm install
+        run: pipenv install --dev
         working-directory: githubapp
 
-      - name: Create private key file
+      - name: Write private key to file
         run: |
           echo "${{ secrets.PRIVATE_KEY }}" > githubapp/private-key.pem
           chmod 600 githubapp/private-key.pem
 
       - name: Run the GitHub App
-        run: npx probot run .
+        run: pipenv run python app.py
         working-directory: githubapp
